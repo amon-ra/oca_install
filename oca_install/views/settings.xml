@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<openerp>
+    <data>
+        
+    
+            
+    
+    <record id="view_oca_git_install_settings" model="ir.ui.view">
+        <field name="name">OCA installer configuration</field>
+        <field name="model">oca.git.install.settings</field>
+        <field name="arch" type="xml">
+            <form string="OCA installer configuration" class="oe_form_configuration">
+                <header>
+                    <button string="Apply" type="object" name="execute" class="oe_highlight"></button>
+                    or
+                    <button string="Cancel" type="object" name="cancel" class="oe_link"></button>
+                </header>
+
+                <sheet>
+
+                <group col="4">
+                <field name="default_oca_addon_base_url" ></field>
+                
+                <field name="default_oca_download_path" ></field>
+                    </group>
+                <group col="4">
+                <field name="default_addon_symlink" ></field>
+                
+                <field name="default_oca_addon_path" ></field>
+                    </group>   
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_oca_git_install_settings" model="ir.actions.act_window">
+        <field name="name">OCA installer configuration</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">oca.git.install.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+    </record>
+
+    <menuitem id="menu_oca_git_install_settings" name="OCA installer configuration" parent="base.menu_config" action="action_oca_git_install_settings"/>
+
+    
+
+    </data>
+</openerp>

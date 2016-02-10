@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<openerp>
+    <data>
+        
+    
+            
+    <record model="ir.ui.view" id="oca_install.view_oca_git_installer_form">
+        <field name="name">OCA addons installer</field>
+        <field name="model">git.installer</field>
+        
+        
+        <field name="arch" type="xml">
+                
+            <form string="OCA addons installer"  create="false"  edit="false"  delete="false" >
+            
+                <header>
+                
+                    
+            <button name="action_install" string="Install" type="object"  class="oe_highlight" />
+            
+        
+                
+                
+                </header>
+            
+                <sheet>
+                
+                <group col="4">
+                    <field name="name"  />
+                    <field name="oca_download_path"  />
+                    <field name="oca_addon_base_url"  />
+                    <field name="tree" />
+
+                </group>
+                <group>
+                    <field name="system_addon_path" />
+                </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    
+
+    </data>
+</openerp>
