@@ -1,16 +1,16 @@
 <?xml version="1.0"?>
 <openerp>
     <data>
-        
-        <record model="ir.actions.act_window" id="oca_install.act_oca_git_installer">
+
+        <record model="ir.actions.act_window" id="git_install.act_oca_git_installer">
             <field name="name">OCA addon installer</field>
             <field name="res_model">git.installer</field>
             <field name="view_mode">form</field>
             <field name="view_type">form</field>
             <field name="target">current</field>
-            
+
         </record>
 
-    
+
     </data>
 </openerp>

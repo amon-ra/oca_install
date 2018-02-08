@@ -22,7 +22,7 @@
 from openerp import models, fields, api, tools, _
 # from openerp.osv import fields as fields_old
 # import openerp.addons.decimal_precision as dp
-import subprocess,os
+import subprocess, os
 import logging
 
 logger = logging.getLogger(__name__)
@@ -32,11 +32,11 @@ class GitInstaller(models.TransientModel):
     _name = 'git.installer'
     _description = 'OCA addons installer'
 
-    oca_download_path = fields.Char(required=True,string='Oca download path')
-    addon_symlink = fields.Boolean(required=True,string='Add module to system path')
+    oca_download_path = fields.Char(required=True, string='Oca download path')
+    addon_symlink = fields.Boolean(required=True, string='Add module to system path')
     oca_addon_path = fields.Char(required=True, string='Oca addon path' )
 
-    oca_addon_base_url = fields.Char(string='Oca addon base url' )
+    oca_addon_base_url = fields.Char(string='Oca addon base url')
 
     system_addon_path = fields.Text(string='Config string addons path',help='Append this to configuration addons path')
 
@@ -51,10 +51,10 @@ class GitInstaller(models.TransientModel):
 
         if tree:
             p = subprocess.Popen(['/usr/bin/git','clone','-b',tree,'--depth','1', url + '/' + name,
-                                              os.path.join(path,name)],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+                                os.path.join(path,name)],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         else:
             p = subprocess.Popen(['/usr/bin/git','clone','--depth','1', url + '/' + name,
-                                              os.path.join(path,name)],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+                                os.path.join(path,name)],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         output, errors = p.communicate()
         logger.error("{}\n{}".format(output,errors))
         if os.path.exists(os.path.join(path,name,'__openerp__.py')):
@@ -67,7 +67,7 @@ class GitInstaller(models.TransientModel):
             tree_path = os.path.join(path,name)
             for f in os.listdir(tree_path):
                 if not os.path.isfile(os.path.join(tree_path,f)) and not os.path.exists(os.path.join(
-                    self.oca_addon_path,f)) and not f.startswith('.'):
+                self.oca_addon_path,f)) and not f.startswith('.'):
                     os.symlink(os.path.join(tree_path,f),os.path.join(self.oca_addon_path,f))
         try:
             with open(os.path.join(path, name, 'oca_dependencies.txt'), 'r') as f:
