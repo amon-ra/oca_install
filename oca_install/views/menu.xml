@@ -2,9 +2,9 @@
 <openerp>
     <data>
 
-        <menuitem id="git_install.menu_act_oca_addons_installer" name="OCA addons installer"  sequence="99"
+        <menuitem id="oca_install.menu_act_oca_addons_installer" name="OCA addons installer"  sequence="99"
                 parent="base.menu_management"
-                action="git_install.act_oca_git_installer"/>
+                action="oca_install.act_oca_oca_installer"/>
 
 
     </data>

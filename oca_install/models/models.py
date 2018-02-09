@@ -23,62 +23,86 @@ from openerp import models, fields, api, tools, _
 # from openerp.osv import fields as fields_old
 # import openerp.addons.decimal_precision as dp
 import subprocess, os
-import logging
+import logging,re
 
 logger = logging.getLogger(__name__)
 
 
 class GitInstaller(models.TransientModel):
-    _name = 'git.installer'
+    _name = 'oca.installer'
     _description = 'OCA addons installer'
 
-    oca_download_path = fields.Char(required=True, string='Oca download path')
+    oca_download_path = fields.Char(required=True, string='Oca download path',help='Ensure you have permision in this directory')
     addon_symlink = fields.Boolean(required=True, string='Add module to system path')
-    oca_addon_path = fields.Char(required=True, string='Oca addon path' )
+    oca_addon_path = fields.Char(required=True, string='Odoo addon path' )
 
-    oca_addon_base_url = fields.Char(string='Oca addon base url')
+    oca_addon_base_url = fields.Char(string='Oca addon base url',required=True)
 
     system_addon_path = fields.Text(string='Config string addons path',help='Append this to configuration addons path')
 
     name = fields.Char(required=True, string='OCA Repo Name' )
     tree = fields.Char('Tree')
 
-    def git_download(self, system_addon_path, name, path, tree=False, url=False):
-        if not url:
+    def git_download(self, system_addon_path, name, path, tree=False, base_url=False):
+        if name.startswith('http://') or name.startswith('https://') or name.startswith('git://'):
             l = name.split('/')
+            url=name
             name = l[-1]
-            url = '/'.join(l[:-1])
-
-        if tree:
-            p = subprocess.Popen(['/usr/bin/git','clone','-b',tree,'--depth','1', url + '/' + name,
-                                os.path.join(path,name)],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            if not base_url:
+                base_url = '/'.join(l[:-1])          
         else:
-            p = subprocess.Popen(['/usr/bin/git','clone','--depth','1', url + '/' + name,
-                                os.path.join(path,name)],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        output, errors = p.communicate()
-        logger.error("{}\n{}".format(output,errors))
-        if os.path.exists(os.path.join(path,name,'__openerp__.py')):
-            os.rename(os.path.join(path,name),os.path.join(path,name,'_'+name))
-            os.mkdir(os.path.join(path,name))
-            os.rename(os.path.join(path,name,'_'+name),os.path.join(path,name,name))
-        if os.path.exists(os.path.join(path,name)):
-            system_addon_path += ','+os.path.join(path,name)
+            assert base_url, "no base url" 
+            url=base_url+"/"+name
+
+        #return if already downloaded
+        destination = os.path.join(path,name)
+        if destination in system_addon_path:
+            return system_addon_path
+        if not os.path.exists(destination):
+            if tree:
+                p = subprocess.Popen(['/usr/bin/git','clone','-b',tree,'--depth','1', url,
+                                    os.path.join(path,name)],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            else:
+                p = subprocess.Popen(['/usr/bin/git','clone','--depth','1', url,
+                                    os.path.join(path,name)],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            output, errors = p.communicate()
+            logger.info("{}\n{}".format(output,errors))
+            if os.path.exists(os.path.join(path,name,'__openerp__.py')):
+                os.rename(os.path.join(path,name),os.path.join(path,name,'_'+name))
+                os.mkdir(os.path.join(path,name))
+                os.rename(os.path.join(path,name,'_'+name),os.path.join(path,name,name))
         if self.addon_symlink:
             tree_path = os.path.join(path,name)
             for f in os.listdir(tree_path):
+                logger.info(self.oca_addon_path)
+                logger.info(tree_path)
+                logger.info(f)
                 if not os.path.isfile(os.path.join(tree_path,f)) and not os.path.exists(os.path.join(
                 self.oca_addon_path,f)) and not f.startswith('.'):
                     os.symlink(os.path.join(tree_path,f),os.path.join(self.oca_addon_path,f))
+                                   
         try:
+            system_addon_path.append(os.path.join(path,name))
             with open(os.path.join(path, name, 'oca_dependencies.txt'), 'r') as f:
                 for line in f:
                     line=line.strip()
                     if line.startswith('#'):
                         continue
-                    if line.startswith('http://') or line.startswith('https://') or line.startswith('git://'):
-                        system_addon_path += self.git_download(system_addon_path,line,path,tree)
-                    else:
-                        system_addon_path += self.git_download(system_addon_path,line, path,tree,url)
+                    arr = re.split(r'\s+',line)
+                    try:
+                        if arr[1] != '':
+                            line = arr[1]
+                        else:
+                            line = arr[0]
+                    except:
+                        line = arr[0] 
+                    line = line.strip()
+                    if line:
+                        system_addon_path = self.git_download(system_addon_path,line,path,tree,base_url)
+                    # if line.startswith('http://') or line.startswith('https://') or line.startswith('git://'):
+                    #     system_addon_path = self.git_download(system_addon_path,line,path,tree,base_url)
+                    # else:
+                    #     system_addon_path = self.git_download(system_addon_path,line, path,tree,base_url)
         except IOError:
             pass
         return system_addon_path
@@ -107,5 +131,5 @@ class GitInstaller(models.TransientModel):
         #logger.error(str(self.oca_addon_base_url))
         #logger.error(str(self.oca_addon_path))
 
-        self.system_addon_path =  self.git_download('', self.name, self.oca_download_path, tree=self.tree,
-                                                    url=self.oca_addon_base_url)[1:]
+        self.system_addon_path =  ','.join(self.git_download([], self.name, self.oca_download_path, tree=self.tree,
+                                                    base_url=self.oca_addon_base_url))

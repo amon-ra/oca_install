@@ -27,26 +27,29 @@ import os
 
 
 class OcaGitInstallSettings(models.TransientModel):
-    _name = 'git.install.settings'
-    _inherit = ['res.config.settings']
+    _name = 'oca.install.settings'
+    _inherit = 'res.config.settings'
 
 
-    default_oca_addon_base_url = fields.Char(default_model='git.installer',default='https://github.com/OCA')
-
-    @api.model
-    def get_default_oca_addon_path(self, fields):
+    def _default_oca_addon_path(self):
         if os.environ.get('XDG_DATA_HOME',False):
-            return { 'oca_addon_path': os.path.join(os.environ['XDG_DATA_HOME'],'Odoo','addons','8.0')}
+            return  os.path.join(os.environ['XDG_DATA_HOME'],'Odoo','addons','10.0')
             # os.path.join(os.environ['XDG_DATA_HOME'],'src'))
         else:
-            return { 'oca_addon_path': os.path.join(os.environ.get('HOME','/var/lib/odoo'),'addons','8.0')}
-            # default_oca_download_path = fields.Char(default_model='git.installer',default=os.path.join(os.environ.get('HOME','/var/lib/odoo'),'src'))
+            return os.path.join(os.environ.get('HOME','/var/lib/odoo'),'addons','10.0')
+            # default_oca_download_path = fields.Char(default_model='oca.installer',default=os.path.join(os.environ.get('HOME','/var/lib/odoo'),'src'))
 
-    @api.model
-    def get_default_oca_download_path(self, fields):
+    def _default_oca_download_path(self):
         if os.environ.get('XDG_DATA_HOME',False):
-            return { 'default_oca_download_path' : os.path.join(os.environ['XDG_DATA_HOME'],'src') }
+            return os.path.join(os.environ['XDG_DATA_HOME'],'src') 
         else:
-            return { 'default_oca_download_path' : os.path.join(os.environ.get('HOME','/var/lib/odoo'),'src') }
+            return os.path.join(os.environ.get('HOME','/var/lib/odoo'),'src') 
 
-    default_addon_symlink = fields.Boolean(default_model='git.installer',default=True)
+    default_oca_addon_base_url = fields.Char(default_model='oca.installer',default='https://github.com/OCA')
+
+    default_oca_addon_path = fields.Char(default_model='oca.installer',default=_default_oca_addon_path)
+
+    default_oca_download_path = fields.Char(default_model='oca.installer',default=_default_oca_download_path)
+
+
+    default_addon_symlink = fields.Boolean(default_model='oca.installer',default=True)
